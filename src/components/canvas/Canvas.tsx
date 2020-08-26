@@ -92,7 +92,7 @@ const Canvas = () => {
             return (
                 <div className='container canvas-container'>
         <canvas ref = {canvasRef} className='canvas' onClick={()=>{
-           quicksort(arrayContext,0,arrayContext.lenght);            
+        //    quicksort(arrayContext,0,arrayContext.lenght);            
         }}>
         </canvas>
         </div>
