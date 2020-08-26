@@ -1,0 +1,13 @@
+@import '../../assets/colors.scss';
+.nav-wrapper{
+    background-color:$grey ;   
+}
+.nav-dropdown-elem{
+ background-color: $light-grey;     
+ color: white !important;  
+ text-align:center !important;
+}
+.dropdown-trigger{
+    font-size: 1.5em;
+    background-color:$light-grey;
+}

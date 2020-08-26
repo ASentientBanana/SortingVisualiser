@@ -1,0 +1,14 @@
+.nav-wrapper {
+  background-color: #262b2b;
+}
+
+.nav-dropdown-elem {
+  background-color: #5f787b;
+  color: white !important;
+  text-align: center !important;
+}
+
+.dropdown-trigger {
+  font-size: 1.5em;
+  background-color: #5f787b;
+}

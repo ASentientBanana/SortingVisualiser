@@ -1,0 +1,6 @@
+.canvas {
+  margin-top: 5vh;
+  background-color: #39494b5e;
+  -webkit-box-shadow: 20px 30px 10px 1px #0d101173;
+          box-shadow: 20px 30px 10px 1px #0d101173;
+}
