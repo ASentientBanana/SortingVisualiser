@@ -68,6 +68,7 @@ const Canvas = ({ alg }: canvas) => {
         for (var i = left; i < right; i++) {
             if (arr[i] < pivotValue) {
                 await swap(arr, i, partitionIndex);
+                setQuickArray([... await arr])
                 await sleep(0.5)
                 partitionIndex++;
             }
@@ -75,15 +76,14 @@ const Canvas = ({ alg }: canvas) => {
         await swap(arr, right, partitionIndex);
         return partitionIndex;
     }
-    
+
     const quickSort = async (arr: number[], left: number, right: number) => {
-        
+
         if (left < right) {
             const pivot = right;
-            const partitionIndex:any = await partition(arr, pivot, left, right);
-            await Promise.all([quickSort(arr, left, partitionIndex - 1),quickSort(arr, partitionIndex + 1, right)])
+            const partitionIndex: any = await partition(arr, pivot, left, right);
+            await Promise.all([quickSort(arr, left, partitionIndex - 1), quickSort(arr, partitionIndex + 1, right)])
         }
-        setQuickArray([... await arr])
         return await arr;
     }
 
@@ -166,7 +166,7 @@ const Canvas = ({ alg }: canvas) => {
                         break;
                 }
                 console.log(alg);
-                
+
             }}>
             </canvas>
             <h3>Click to see {alg}</h3>
