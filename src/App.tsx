@@ -4,17 +4,14 @@ import NavigationBar from "./components/navigation/NavigationBar";
 import { AlgorithmProvider } from "./contexts/algorithmContext/CurrentAlgoritmContext";
 import {ArrayProvider} from './contexts/array/ArrayContext';
 import "./App.css";
-import Canvas from "./components/canvas/Canvas";
+import CanvasPageGallery from './pages/canvasPage/CanvasPageGallery'
 const App = () => {
-
-  useEffect(() => {
-  }, []);
   return (
     <div>
       <AlgorithmProvider>
         <ArrayProvider>
-        <NavigationBar />
-        <Canvas  />
+        <NavigationBar/>
+        <CanvasPageGallery/>
         </ArrayProvider>
       </AlgorithmProvider>
     </div>

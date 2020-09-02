@@ -4,9 +4,18 @@ import { ArrayContext } from '../../contexts/array/ArrayContext';
 import { setTimeout } from 'timers';
 import { checkServerIdentity } from 'tls';
 
-const Canvas = () => {
+interface canvas {
+    alg: string
+}
+
+const Canvas = ({ alg }: canvas) => {
     const canvasRef = createRef<HTMLCanvasElement>();
-    const [arrayContext, setArrayContext] = useContext(ArrayContext);
+
+    const [bubbleArray, setBubbleArray] = useContext(ArrayContext);
+    const [quickArray, setQuickArray] = useContext(ArrayContext);
+    const [mergeArray, setMergeArray] = useContext(ArrayContext);
+
+
     const canvasSize = (canvasProp: HTMLCanvasElement) => {
         canvasProp.height = window.innerHeight * 0.6;
         canvasProp.width = window.innerWidth * 0.6;
@@ -28,14 +37,13 @@ const Canvas = () => {
         return canvas.height / heighestNumber;
     }
 
-    const sleep = (time: number) => {
+    const sleep = (time: number = 0) => {
         return new Promise(resolve => setTimeout(resolve, time));
     }
     const swap = (array: number[], i: number, j: number) => {
         let tmp = array[i]
         array[i] = array[j];
         array[j] = tmp;
-        setArrayContext([...array])
 
     }
 
@@ -43,8 +51,9 @@ const Canvas = () => {
         for (let i = 0; i < array.length; i++) {
             for (let j = 0; j < array.length; j++) {
                 if (array[i] < array[j]) {
-                    await sleep(0);
+                    await sleep();
                     swap(array, i, j);
+                    setBubbleArray([...array])
                 }
             }
         }
@@ -53,100 +62,114 @@ const Canvas = () => {
 
 
 
-    function partition(arr: number[], pivot: number, left: number, right: number) {
+    const partition = async (arr: number[], pivot: number, left: number, right: number) => {
         var pivotValue = arr[pivot],
             partitionIndex = left;
         for (var i = left; i < right; i++) {
             if (arr[i] < pivotValue) {
-                swap(arr, i, partitionIndex);
+                await swap(arr, i, partitionIndex);
+                await sleep(0.5)
                 partitionIndex++;
             }
         }
-        swap(arr, right, partitionIndex);
+        await swap(arr, right, partitionIndex);
         return partitionIndex;
     }
-
-    function quickSort(arr: number[], left: number, right: number) {
-        var len = arr.length,
-            pivot,
-            partitionIndex;
-
-
+    
+    const quickSort = async (arr: number[], left: number, right: number) => {
+        
         if (left < right) {
-            pivot = right;
-            partitionIndex = partition(arr, pivot, left, right);
-
-            //sort left and right
-            quickSort(arr, left, partitionIndex - 1);
-            quickSort(arr, partitionIndex + 1, right);
+            const pivot = right;
+            const partitionIndex:any = await partition(arr, pivot, left, right);
+            await Promise.all([quickSort(arr, left, partitionIndex - 1),quickSort(arr, partitionIndex + 1, right)])
         }
-        return arr;
+        setQuickArray([... await arr])
+        return await arr;
     }
+
+
 
 
     const mergeSort = async (unsortedArray: number[]): Promise<any> => {
-        // No need to sort the array if the array only has one element or empty
         if (unsortedArray.length <= 1) {
             return unsortedArray;
         }
-        // In order to divide the array in half, we need to figure out the middle
         const middle = Math.floor(unsortedArray.length / 2);
-
-        // This is where we will be dividing the array into left and right
         const left = unsortedArray.slice(0, middle);
         const right = unsortedArray.slice(middle);
-        await sleep(20)
-        const tmp = merge(
+        // await sleep(20)
+        const tmp = await merge(
             await mergeSort(left), await mergeSort(right)
         );
         console.log(await tmp);
-        setArrayContext([... await unsortedArray])
-        // Using recursion to combine the left and right
+        setMergeArray([...tmp])
+
         return tmp
     }
 
-    // Merge the two arrays: left and right
+
     const merge = async (left: number[], right: number[]) => {
         let resultArray = [], leftIndex = 0, rightIndex = 0;
-
-        // We will concatenate values into the resultArray in order
         while (leftIndex < left.length && rightIndex < right.length) {
             if (left[leftIndex] < right[rightIndex]) {
                 resultArray.push(left[leftIndex]);
-                leftIndex++; // move left array cursor
+                leftIndex++;
             } else {
                 resultArray.push(right[rightIndex]);
-                rightIndex++; // move right array cursor
+                rightIndex++;
             }
 
         }
-        // We need to concat here because there will be one element remaining
-        // from either left OR the right
-        // setArrayContext([...left,...right]);
-        return resultArray
+        const r = resultArray
             .concat(left.slice(leftIndex))
             .concat(right.slice(rightIndex));
+        await sleep(20)
+        return await r
     }
+    const checkAlg = (bubble: any, quick: any, merge: any,) => {
+        switch (alg) {
+            case "bubble":
+                return bubble
+            case "quick":
+                return quick
+            case "merge":
+                return merge
 
+            default:
+                return bubble
+        }
+    }
     useEffect(() => {
         if (canvasRef.current != null) {
             const canvasContext = canvasRef.current.getContext("2d");
             const sizeOfCanvas = canvasSize(canvasRef.current);
-            const barSizeNormalizer = editBarHeight(arrayContext, canvasRef.current)
-            if (canvasContext != null) drawBars(canvasContext, sizeOfCanvas, arrayContext, barSizeNormalizer)
+            const barSizeNormalizer = editBarHeight(checkAlg(bubbleArray, quickArray, mergeArray), canvasRef.current)
+            if (canvasContext != null) drawBars(canvasContext, sizeOfCanvas, checkAlg(bubbleArray, quickArray, mergeArray), barSizeNormalizer)
         }
-    }, [arrayContext, canvasRef]);
+    }, [checkAlg(bubbleArray, quickArray, mergeArray), canvasRef]);
     return (
         <div className='container canvas-container'>
             <canvas ref={canvasRef} className='canvas' onClick={() => {
-                //    console.log(quickSort(arrayContext,0,arrayContext.lenght));
-                //   bubbleSort(arrayContext);
-                //  setArrayContext([...res]);
-                //  console.log(quickSort(arrayContext,0,6));
-                console.log(mergeSort(arrayContext));
+                switch (alg) {
+                    case "bubble":
+                        bubbleSort(bubbleArray);
+                        break;
+                    case "quick":
+                        quickSort(quickArray, 0, quickArray.lenght - 1);
+                        console.log(quickSort(quickArray, 0, quickArray.lenght - 1));
+                        break;
+                    case "merge":
+                        mergeSort(mergeArray);
+                        break;
 
+                    default:
+                        break;
+                }
+                console.log(alg);
+                
             }}>
             </canvas>
+            <h3>Click to see {alg}</h3>
         </div>
 
     )
