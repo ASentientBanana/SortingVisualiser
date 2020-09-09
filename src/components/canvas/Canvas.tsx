@@ -89,21 +89,19 @@ const Canvas = ({ alg }: canvas) => {
 
 
 
-
     const mergeSort = async (unsortedArray: number[]): Promise<any> => {
-        if (unsortedArray.length <= 1) {
-            return unsortedArray;
-        }
+        if (unsortedArray.length <= 1) return unsortedArray;
+
         const middle = Math.floor(unsortedArray.length / 2);
         const left = unsortedArray.slice(0, middle);
         const right = unsortedArray.slice(middle);
-        // await sleep(20)
+        // await sleep(500)
+        // console.log([1,23].concat([54]));
+        // setMergeArray([...ARR])
         const tmp = await merge(
             await mergeSort(left), await mergeSort(right)
         );
-        console.log(await tmp);
-        setMergeArray([...tmp])
-
+     
         return tmp
     }
 
@@ -120,10 +118,13 @@ const Canvas = ({ alg }: canvas) => {
             }
 
         }
+        console.log(resultArray);
+        
         const r = resultArray
             .concat(left.slice(leftIndex))
             .concat(right.slice(rightIndex));
-        await sleep(20)
+        await sleep(200)
+        
         return await r
     }
     const checkAlg = (bubble: any, quick: any, merge: any,) => {
@@ -134,7 +135,6 @@ const Canvas = ({ alg }: canvas) => {
                 return quick
             case "merge":
                 return merge
-
             default:
                 return bubble
         }
