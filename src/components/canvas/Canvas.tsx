@@ -6,16 +6,14 @@ import { checkServerIdentity } from 'tls';
 
 interface canvas {
     alg: string
+    arrayState: any
 }
 
-const Canvas = ({ alg }: canvas) => {
+const Canvas = ({ alg, arrayState }: canvas) => {
     const canvasRef = createRef<HTMLCanvasElement>();
 
-    const [bubbleArray, setBubbleArray] = useContext(ArrayContext);
-    const [quickArray, setQuickArray] = useContext(ArrayContext);
-    const [mergeArray, setMergeArray] = useContext(ArrayContext);
-
-
+    const [array, setArray] = arrayState;
+    //#region  Canvas Draw
     const canvasSize = (canvasProp: HTMLCanvasElement) => {
         canvasProp.height = window.innerHeight * 0.6;
         canvasProp.width = window.innerWidth * 0.6;
@@ -36,7 +34,9 @@ const Canvas = ({ alg }: canvas) => {
         }
         return canvas.height / heighestNumber;
     }
+    //#endregion 
 
+    //#region util
     const sleep = (time: number = 0) => {
         return new Promise(resolve => setTimeout(resolve, time));
     }
@@ -44,31 +44,32 @@ const Canvas = ({ alg }: canvas) => {
         let tmp = array[i]
         array[i] = array[j];
         array[j] = tmp;
-
     }
+    //#endregion
 
+    //#region  bubble
     const bubbleSort = async (array: number[]) => {
         for (let i = 0; i < array.length; i++) {
             for (let j = 0; j < array.length; j++) {
                 if (array[i] < array[j]) {
                     await sleep();
                     swap(array, i, j);
-                    setBubbleArray([...array])
+                    setArray([...array])
                 }
             }
         }
         return array;
     }
+    //#endregion
 
-
-
+    //#region quick
     const partition = async (arr: number[], pivot: number, left: number, right: number) => {
         var pivotValue = arr[pivot],
             partitionIndex = left;
         for (var i = left; i < right; i++) {
             if (arr[i] < pivotValue) {
                 await swap(arr, i, partitionIndex);
-                setQuickArray([... await arr])
+                setArray([...await arr])
                 await sleep(0.5)
                 partitionIndex++;
             }
@@ -78,7 +79,6 @@ const Canvas = ({ alg }: canvas) => {
     }
 
     const quickSort = async (arr: number[], left: number, right: number) => {
-
         if (left < right) {
             const pivot = right;
             const partitionIndex: any = await partition(arr, pivot, left, right);
@@ -86,92 +86,61 @@ const Canvas = ({ alg }: canvas) => {
         }
         return await arr;
     }
+    //#endregion
 
+    //#region selection
 
-
-    const mergeSort = async (unsortedArray: number[]): Promise<any> => {
-        if (unsortedArray.length <= 1) return unsortedArray;
-
-        const middle = Math.floor(unsortedArray.length / 2);
-        const left = unsortedArray.slice(0, middle);
-        const right = unsortedArray.slice(middle);
-        // await sleep(500)
-        // console.log([1,23].concat([54]));
-        // setMergeArray([...ARR])
-        const tmp = await merge(
-            await mergeSort(left), await mergeSort(right)
-        );
-     
-        return tmp
-    }
-
-
-    const merge = async (left: number[], right: number[]) => {
-        let resultArray = [], leftIndex = 0, rightIndex = 0;
-        while (leftIndex < left.length && rightIndex < right.length) {
-            if (left[leftIndex] < right[rightIndex]) {
-                resultArray.push(left[leftIndex]);
-                leftIndex++;
-            } else {
-                resultArray.push(right[rightIndex]);
-                rightIndex++;
+    const selectionSort = (array: number[]) => {
+        const arrLen = array.length;
+        for (let i = 0; i < arrLen - 1; i++) {
+            let min_idx = i;
+            for (let j = i + 1; j < arrLen; j++) {
+                if (array[j] < array[min_idx]) {
+                    min_idx = j;
+                    swap(array, min_idx, i)
+                    setArray([...array]);
+                }
             }
-
         }
-        console.log(resultArray);
-        
-        const r = resultArray
-            .concat(left.slice(leftIndex))
-            .concat(right.slice(rightIndex));
-        await sleep(200)
-        
-        return await r
     }
-    const checkAlg = (bubble: any, quick: any, merge: any,) => {
+
+    //#endregion
+
+    const algSelect = () => {
         switch (alg) {
             case "bubble":
-                return bubble
+                console.log(alg);
+                bubbleSort(array);
+                break;
             case "quick":
-                return quick
-            case "merge":
-                return merge
+                console.log(alg);
+                quickSort(array, 0, array.length - 1)
+                break
+            case "selection":
+                console.log(alg);
+                selectionSort(array);
+                break;
             default:
-                return bubble
+                break;
         }
     }
+
     useEffect(() => {
         if (canvasRef.current != null) {
             const canvasContext = canvasRef.current.getContext("2d");
             const sizeOfCanvas = canvasSize(canvasRef.current);
-            const barSizeNormalizer = editBarHeight(checkAlg(bubbleArray, quickArray, mergeArray), canvasRef.current)
-            if (canvasContext != null) drawBars(canvasContext, sizeOfCanvas, checkAlg(bubbleArray, quickArray, mergeArray), barSizeNormalizer)
+            const barSizeNormalizer = editBarHeight(array, canvasRef.current)
+            if (canvasContext != null) drawBars(canvasContext, sizeOfCanvas, array, barSizeNormalizer)
         }
-    }, [checkAlg(bubbleArray, quickArray, mergeArray), canvasRef]);
+    }, [array, canvasRef]);
     return (
-        <div className='container canvas-container'>
+        <div className='canvas-container'>
             <canvas ref={canvasRef} className='canvas' onClick={() => {
-                switch (alg) {
-                    case "bubble":
-                        bubbleSort(bubbleArray);
-                        break;
-                    case "quick":
-                        quickSort(quickArray, 0, quickArray.lenght - 1);
-                        console.log(quickSort(quickArray, 0, quickArray.lenght - 1));
-                        break;
-                    case "merge":
-                        mergeSort(mergeArray);
-                        break;
-
-                    default:
-                        break;
-                }
-                console.log(alg);
-
+                algSelect();
             }}>
             </canvas>
-            <h3>Click to see {alg}</h3>
+            <h3 className="title-text">Click to see {alg} sort</h3>
         </div>
-
     )
 }
 

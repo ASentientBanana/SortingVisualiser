@@ -1,8 +1,17 @@
 @import '../../assets/colors.scss';
 
-.canvas{
-    margin-top:5vh;
-    background-color: #39494b5e;
-    // border:solid 1px $light-grey;
-    box-shadow: 20px 30px 10px 1px $dark-grey-half;
+.canvas-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    .canvas{
+        margin-top:5vh;
+        background-color: #39494b5e;
+        // border:solid 1px $light-grey;
+        box-shadow: 20px 30px 10px 1px $dark-grey-half;
+    }
+}
+.title-text{
+    color:$gold-accent;
 }
