@@ -1,8 +1,5 @@
-import React, { useEffect, createRef, useContext } from 'react';
+import React, { useEffect, createRef, useState } from 'react';
 import './Canvas.css';
-import { ArrayContext } from '../../contexts/array/ArrayContext';
-import { setTimeout } from 'timers';
-import { checkServerIdentity } from 'tls';
 import SortingUtility from '../../algorithms/SortingUtility'
 interface canvas {
     alg: string
@@ -11,7 +8,8 @@ interface canvas {
 
 const Canvas = ({ alg, arrayState }: canvas) => {
     const canvasRef = createRef<HTMLCanvasElement>();
-
+    const [currNum, setCurrNum] = useState(0);
+    const [currNum2, setCurrNum2] = useState(0);
     const [array, setArray] = arrayState;
     //#region  Canvas Draw
     const canvasSize = (canvasProp: HTMLCanvasElement) => {
@@ -23,7 +21,16 @@ const Canvas = ({ alg, arrayState }: canvas) => {
         const count = randomArray.length;
         const barWidth = canvasSize.x / count;
         for (let i = 0; i < count; i++) {
-            ctx.fillStyle = '#eab354';
+            if (i === currNum) {
+                ctx.fillStyle = 'red';
+            }
+            else if (i === currNum2) {
+                ctx.fillStyle = 'green';
+            }
+            else {
+                ctx.fillStyle = '#eab354';
+            }
+
             ctx.fillRect(i * barWidth, canvasSize.y, barWidth, randomArray[i] * -barSizeNormalizer);
         }
     }
@@ -41,15 +48,15 @@ const Canvas = ({ alg, arrayState }: canvas) => {
             case "bubble":
                 console.log(alg);
                 // bubbleSort(array);
-                SortingUtility.bubbleSort(array, setArray)
+                SortingUtility.bubbleSort(array, setArray, setCurrNum, setCurrNum2)
                 break;
             case "quick":
                 console.log(alg);
-                SortingUtility.quickSort(array, 0, array.length - 1, setArray)
+                SortingUtility.quickSort(array, 0, array.length - 1, setArray, setCurrNum, setCurrNum2)
                 break
             case "selection":
                 console.log(alg);
-                SortingUtility.selectionSort(array, setArray);
+                SortingUtility.selectionSort(array, setArray, setCurrNum, setCurrNum2);
                 break;
             default:
                 break;
@@ -63,7 +70,7 @@ const Canvas = ({ alg, arrayState }: canvas) => {
             const barSizeNormalizer = editBarHeight(array, canvasRef.current)
             if (canvasContext != null) drawBars(canvasContext, sizeOfCanvas, array, barSizeNormalizer)
         }
-    }, [array, canvasRef]);
+    }, [array, canvasRef, drawBars]);
     return (
         <div className='canvas-container'>
             <canvas ref={canvasRef} className='canvas' onClick={() => {

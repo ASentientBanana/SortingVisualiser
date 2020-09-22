@@ -5,18 +5,20 @@ class SortingUtility {
     static sleep(time: number = 0) {
         return new Promise(resolve => setTimeout(resolve, time));
     }
-    static swap(array: number[], i: number, j: number) {
+    static swap(array: number[], i: number, j: number, updateColor: Function, updateColor2: Function) {
+        updateColor(i);
+        updateColor2(j);
         let tmp = array[i]
         array[i] = array[j];
         array[j] = tmp;
     }
 
-    static async bubbleSort(array: number[], updateArray: Function) {
+    static async bubbleSort(array: number[], updateArray: Function, updateColor: Function, updateColor2: Function) {
         for (let i = 0; i < array.length; i++) {
             for (let j = 0; j < array.length; j++) {
                 if (array[i] < array[j]) {
                     await this.sleep(10);
-                    SortingUtility.swap(array, i, j);
+                    SortingUtility.swap(array, i, j, updateColor, updateColor2);
                     updateArray([...array])
                 }
             }
@@ -24,31 +26,32 @@ class SortingUtility {
         return array;
     }
 
-    static partition = async (arr: number[], pivot: number, left: number, right: number, updateArray: Function) => {
+    static partition = async (arr: number[], pivot: number, left: number, right: number, updateArray: Function, setCurrNum1: Function, setCurrNum2: Function) => {
         let pivotValue = arr[pivot],
             partitionIndex = left;
         for (let i = left; i < right; i++) {
             if (arr[i] < pivotValue) {
-                await SortingUtility.swap(arr, i, partitionIndex);
-                if (updateArray) updateArray([...await arr])
-                await SortingUtility.sleep(0.5)
+                SortingUtility.swap(arr, i, partitionIndex, setCurrNum1, setCurrNum2);
+                if (updateArray) updateArray([... await arr])
+                await SortingUtility.sleep(10)
                 partitionIndex++;
             }
         }
-        await SortingUtility.swap(arr, right, partitionIndex);
+        SortingUtility.swap(arr, right, partitionIndex, setCurrNum1, setCurrNum2);
         return partitionIndex;
     }
 
-    static quickSort = async (arr: number[], left: number, right: number, updateArray: Function) => {
+    static quickSort = async (arr: number[], left: number, right: number, updateArray: Function, setCurrNum1: Function, setCurrNum2: Function) => {
         if (left < right) {
             const pivot = right;
-            const partitionIndex: number = await SortingUtility.partition(arr, pivot, left, right, updateArray);
-            await Promise.all([SortingUtility.quickSort(arr, left, partitionIndex - 1, updateArray), SortingUtility.quickSort(arr, partitionIndex + 1, right, updateArray)])
+
+            const partitionIndex: number = await SortingUtility.partition(arr, pivot, left, right, updateArray, setCurrNum1, setCurrNum2);
+            await Promise.all([SortingUtility.quickSort(arr, left, partitionIndex - 1, updateArray, setCurrNum1, setCurrNum2), SortingUtility.quickSort(arr, partitionIndex + 1, right, updateArray, setCurrNum1, setCurrNum2)])
         }
         return await arr;
     }
 
-    static selectionSort = async (array: number[], updateArray: Function) => {
+    static selectionSort = async (array: number[], updateArray: Function, setCurrNum1: Function, setCurrNum2: Function) => {
         for (let i = 0; i < array.length; i++) {
             //set min to the current iteration of i
             let min = i;
@@ -57,10 +60,8 @@ class SortingUtility {
                     min = j;
                 }
             }
-            let temp = array[i];
-            array[i] = array[min];
-            array[min] = temp;
-            await SortingUtility.sleep(50);
+            SortingUtility.swap(array, i, min, setCurrNum1, setCurrNum2);
+            await SortingUtility.sleep(10);
             updateArray([...array])
         }
         return array;
