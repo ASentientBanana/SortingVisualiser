@@ -3,7 +3,7 @@ import './Canvas.css';
 import { ArrayContext } from '../../contexts/array/ArrayContext';
 import { setTimeout } from 'timers';
 import { checkServerIdentity } from 'tls';
-
+import SortingUtility from '../../algorithms/SortingUtility'
 interface canvas {
     alg: string
     arrayState: any
@@ -36,89 +36,20 @@ const Canvas = ({ alg, arrayState }: canvas) => {
     }
     //#endregion 
 
-    //#region util
-    const sleep = (time: number = 0) => {
-        return new Promise(resolve => setTimeout(resolve, time));
-    }
-    const swap = (array: number[], i: number, j: number) => {
-        let tmp = array[i]
-        array[i] = array[j];
-        array[j] = tmp;
-    }
-    //#endregion
-
-    //#region  bubble
-    const bubbleSort = async (array: number[]) => {
-        for (let i = 0; i < array.length; i++) {
-            for (let j = 0; j < array.length; j++) {
-                if (array[i] < array[j]) {
-                    await sleep();
-                    swap(array, i, j);
-                    setArray([...array])
-                }
-            }
-        }
-        return array;
-    }
-    //#endregion
-
-    //#region quick
-    const partition = async (arr: number[], pivot: number, left: number, right: number) => {
-        var pivotValue = arr[pivot],
-            partitionIndex = left;
-        for (var i = left; i < right; i++) {
-            if (arr[i] < pivotValue) {
-                await swap(arr, i, partitionIndex);
-                setArray([...await arr])
-                await sleep(0.5)
-                partitionIndex++;
-            }
-        }
-        await swap(arr, right, partitionIndex);
-        return partitionIndex;
-    }
-
-    const quickSort = async (arr: number[], left: number, right: number) => {
-        if (left < right) {
-            const pivot = right;
-            const partitionIndex: any = await partition(arr, pivot, left, right);
-            await Promise.all([quickSort(arr, left, partitionIndex - 1), quickSort(arr, partitionIndex + 1, right)])
-        }
-        return await arr;
-    }
-    //#endregion
-
-    //#region selection
-
-    const selectionSort = (array: number[]) => {
-        const arrLen = array.length;
-        for (let i = 0; i < arrLen - 1; i++) {
-            let min_idx = i;
-            for (let j = i + 1; j < arrLen; j++) {
-                if (array[j] < array[min_idx]) {
-                    min_idx = j;
-                    swap(array, min_idx, i)
-                    setArray([...array]);
-                }
-            }
-        }
-    }
-
-    //#endregion
-
     const algSelect = () => {
         switch (alg) {
             case "bubble":
                 console.log(alg);
-                bubbleSort(array);
+                // bubbleSort(array);
+                SortingUtility.bubbleSort(array, setArray)
                 break;
             case "quick":
                 console.log(alg);
-                quickSort(array, 0, array.length - 1)
+                SortingUtility.quickSort(array, 0, array.length - 1, setArray)
                 break
             case "selection":
                 console.log(alg);
-                selectionSort(array);
+                SortingUtility.selectionSort(array, setArray);
                 break;
             default:
                 break;

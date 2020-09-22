@@ -10,8 +10,8 @@ const CanvasPageGallery = () => {
     return (
         <div className="container">
             <Canvas alg='bubble' arrayState={bubbleArray} />
-            <Canvas alg='quick' arrayState={quickArray} />
             <Canvas alg='selection' arrayState={selectionArray} />
+            <Canvas alg='quick' arrayState={quickArray} />
         </div>
     );
 }
