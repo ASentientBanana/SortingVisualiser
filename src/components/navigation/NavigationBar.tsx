@@ -21,15 +21,15 @@ function NavigationBar() {
     }, []);
     return (
         <div>
-            <ul id="dropdown1" className="dropdown-content ">
+            {/* <ul id="dropdown1" className="dropdown-content ">
                 {dropdowns.map((alg, index) => (
                     <li key={index} className=' nav-dropdown-elem ' onClick={() => {
                         setCurrentAlgorithm(alg)
                         console.log(currentAlgorithm)
                     }} ><div>{alg} sort</div></li>
                 ))}
-                {/* <li><a  className='nav-dropdown-elem' href="#!">three</a></li> */}
-            </ul>
+                 <li><a  className='nav-dropdown-elem' href="#!">three</a></li> 
+            </ul> */}
             <nav>
                 <div className="nav-wrapper">
                     <a href="#!" className="brand-logo center">Sorting Algorithm</a>
