@@ -14,10 +14,10 @@ function NavigationBar() {
         coverTrigger: false, // Displays dropdown below the button
     };
     useEffect(() => {
-        M.AutoInit();
-        if (navDropdown.current != null) {
-            M.Dropdown.init(navDropdown.current, options)
-        }
+        // M.AutoInit();
+        // if (navDropdown.current != null) {
+        //     M.Dropdown.init(navDropdown.current, options)
+        // }
     }, []);
     return (
         <div>
