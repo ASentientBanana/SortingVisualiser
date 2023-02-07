@@ -4,23 +4,24 @@ import React, {
   useState,
   useCallback,
   useRef,
+  MutableRefObject
 } from "react";
 import "./Canvas.css";
 import SortingUtility from "../../algorithms/SortingUtility";
-interface canvas {
+interface IProps {
   alg: string;
   arrayState: any;
+  newArr: MutableRefObject<number[]>
 }
 
-const Canvas = ({ alg, arrayState }: canvas) => {
+const Canvas = ({ alg, arrayState, newArr }: IProps) => {
   const canvasRef = createRef<HTMLCanvasElement>();
-  const [currNum, setCurrNum] = useState(0);
-  const [currNum2, setCurrNum2] = useState(0);
-  const [array, setArray] = arrayState;
+
+  const beginRef = useRef(0);
+  const endRef = useRef(0);
+
   const clickState = useRef(true);
   const sortedState = useRef(false);
-  const randArr = useRef([...array]);
-  const [rend, setRend] = useState(false);
 
   //#region  Canvas Draw
   const canvasSize = (canvasProp: HTMLCanvasElement) => {
@@ -28,7 +29,7 @@ const Canvas = ({ alg, arrayState }: canvas) => {
     canvasProp.width = window.innerWidth * 0.6;
     return { x: canvasProp.width, y: canvasProp.height };
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const drawBars = (
     ctx: CanvasRenderingContext2D,
     canvasSize: any,
@@ -38,11 +39,13 @@ const Canvas = ({ alg, arrayState }: canvas) => {
     const count = randomArray.length;
     const barWidth = canvasSize.x / count;
     for (let i = 0; i < count; i++) {
-      if (i === currNum) {
+      if (i === beginRef.current) {
         ctx.fillStyle = "red";
-      } else if (i === currNum2) {
+
+      } else if (endRef.current === i) {
         ctx.fillStyle = "green";
       } else {
+
         ctx.fillStyle = "#eab354";
       }
 
@@ -54,15 +57,16 @@ const Canvas = ({ alg, arrayState }: canvas) => {
       );
     }
   };
-  const draw = useCallback(() => {
-    if (canvasRef.current) {
-      const canvasContext = canvasRef.current.getContext("2d");
-      const sizeOfCanvas = canvasSize(canvasRef.current);
-      const barSizeNormalizer = editBarHeight(array, canvasRef.current);
-      if (canvasContext)
-        drawBars(canvasContext, sizeOfCanvas, array, barSizeNormalizer);
-    }
-  }, [array, canvasRef, drawBars]);
+
+  const drawRemaster = useCallback(() => {
+    if (!canvasRef.current) return;
+    const canvasContext = canvasRef.current.getContext("2d");
+    if (!canvasContext) return;
+    const sizeOfCanvas = canvasSize(canvasRef.current);
+    const barSizeNormalizer = editBarHeight(newArr.current, canvasRef.current);
+    drawBars(canvasContext, sizeOfCanvas, newArr.current, barSizeNormalizer);
+  }, [canvasRef, drawBars]);
+
   const editBarHeight = (randomArray: number[], canvas: HTMLCanvasElement) => {
     let heighestNumber = 0;
     for (let i = 0; i < randomArray.length; i++) {
@@ -70,86 +74,99 @@ const Canvas = ({ alg, arrayState }: canvas) => {
     }
     return canvas.height / heighestNumber;
   };
-  //#endregion
+
+  const bubbleSort = async () => {
+    await SortingUtility.bubbleSortRemaster(newArr, beginRef, endRef, drawRemaster)
+    clickState.current = true;
+    sortedState.current = true;
+    //cleanup
+    beginRef.current = -1;
+    endRef.current = -1;
+    drawRemaster();
+  }
+
+  const quicksort = async () => {
+    let cnt = 0;
+    await SortingUtility.quickSort(
+      newArr,
+      0,
+      newArr.current.length - 1,
+      drawRemaster,
+      cnt,
+      beginRef,
+      endRef
+    );
+    clickState.current = true;
+    sortedState.current = true;
+    beginRef.current = -1;
+    endRef.current = -1;
+    drawRemaster();
+  }
+
+  const selectionSort = async () => {
+    await SortingUtility.selectionSort(newArr, beginRef, endRef, drawRemaster);
+    clickState.current = true;
+    sortedState.current = true;
+    beginRef.current = -1;
+    endRef.current = -1;
+    drawRemaster();
+
+  }
 
   const algSelect = () => {
     if (sortedState.current === true) {
-      setArray(randArr.current);
+      newArr.current = [...arrayState];
     }
     clickState.current = false;
     switch (alg) {
       case "bubble":
-        console.log(alg);
-        Promise.resolve(
-          SortingUtility.bubbleSort(array, setArray, setCurrNum, setCurrNum2)
-        ).then((res) => {
-          clickState.current = true;
-          sortedState.current = true;
-          setCurrNum(-1);
-          setCurrNum2(-1);
-          draw();
-        });
+        bubbleSort()
         break;
       case "quick":
-        console.log(alg);
-        let cnt = 0;
-        Promise.resolve(
-          SortingUtility.quickSort(
-            array,
-            0,
-            array.length - 1,
-            setArray,
-            setCurrNum,
-            setCurrNum2,
-            cnt
-          )
-        ).then((res) => {
-          clickState.current = true;
-          sortedState.current = true;
-          setCurrNum(-1);
-          setCurrNum2(-1);
-          draw();
-        });
+        quicksort();
         break;
       case "selection":
-        console.log(alg);
-        Promise.resolve(
-          SortingUtility.selectionSort(array, setArray, setCurrNum, setCurrNum2)
-        ).then((res) => {
-          clickState.current = true;
-          sortedState.current = true;
-          setCurrNum(-1);
-          setCurrNum2(-1);
-          draw();
-        });
-
+        selectionSort();
         break;
       default:
         break;
     }
   };
 
+  const clickHandler = () => {
+    if (clickState.current) {
+      if (sortedState.current) {
+
+        newArr.current = [...arrayState];
+        drawRemaster();
+        sortedState.current = false;
+      } else {
+        algSelect();
+      }
+    }
+  }
+
   useEffect(() => {
-    if (canvasRef.current != null) draw();
+    if (canvasRef.current != null) {
+      drawRemaster();
+      window.addEventListener('resize', () => {
+        drawRemaster();
+      });
+    }
   }, [canvasRef]);
+
+
+
   return (
-    <div className="canvas-container">
-      <canvas
-        ref={canvasRef}
-        className="canvas"
-        onClick={() => {
-          if (clickState.current) {
-            if (sortedState.current) {
-              setArray(randArr.current);
-              draw();
-              sortedState.current = false;
-            } else {
-              algSelect();
-            }
-          }
-        }}
-      ></canvas>
-      <h3 className="title-text">Click to see {alg} sort</h3>
+    <div>
+      <div className="canvas-container">
+        <canvas
+          ref={canvasRef}
+          className="canvas"
+          onClick={clickHandler}
+        ></canvas>
+        <h3 className="title-text">Click to see {alg} sort</h3>
+      </div>
     </div>
   );
 };

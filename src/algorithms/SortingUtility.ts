@@ -1,8 +1,10 @@
-import React from "react";
+import React, { MutableRefObject } from "react";
 
 class SortingUtility {
+  static delay = 2;
+
   static sleep(time: number = 0) {
-    return new Promise((resolve) => setTimeout(resolve, time));
+    return new Promise((resolve) => setTimeout(resolve, SortingUtility.delay));
   }
   static swap(
     array: number[],
@@ -18,18 +20,37 @@ class SortingUtility {
     array[j] = tmp;
   }
 
-  static async bubbleSort(
-    array: number[],
-    updateArray: Function,
-    updateColor: Function,
-    updateColor2: Function
+  static swapRemaster(
+    array: MutableRefObject<number[]>,
+    i: number,
+    j: number,
+    c1?: MutableRefObject<number>,
+    c2?: MutableRefObject<number>
   ) {
-    for (let i = 0; i < array.length; i++) {
-      for (let j = 0; j < array.length; j++) {
-        if (array[i] < array[j]) {
+    if (c1 && c2) {
+      c1.current = i;
+      c2.current = j;
+    }
+    let tmp = array.current[i];
+    array.current[i] = array.current[j];
+    array.current[j] = tmp;
+  }
+
+  static async bubbleSortRemaster(
+    array: MutableRefObject<number[]>,
+    c1: MutableRefObject<number>,
+    c2: MutableRefObject<number>,
+    draw: () => void,
+  ) {
+    const len = array.current.length;
+    for (let i = 0; i < len; i++) {
+      for (let j = 0; j < len; j++) {
+        if (array.current[i] < array.current[j]) {
           await this.sleep(2);
-          SortingUtility.swap(array, i, j, updateColor, updateColor2);
-          updateArray([...array]);
+          c1.current = i;
+          c2.current = j;
+          SortingUtility.swapRemaster(array, i, j);
+          draw();
         }
       }
     }
@@ -37,36 +58,37 @@ class SortingUtility {
   }
 
   static partition = async (
-    arr: number[],
+    arr: MutableRefObject<number[]>,
     pivot: number,
     left: number,
     right: number,
-    updateArray: Function,
-    setCurrNum1: Function,
-    setCurrNum2: Function
+    c1: MutableRefObject<number>,
+    c2: MutableRefObject<number>,
+    draw: () => void,
   ) => {
-    let pivotValue = arr[pivot],
+    let pivotValue = arr.current[pivot],
       partitionIndex = left;
     for (let i = left; i < right; i++) {
-      if (arr[i] < pivotValue) {
-        SortingUtility.swap(arr, i, partitionIndex, setCurrNum1, setCurrNum2);
-        if (updateArray) updateArray([...(await arr)]);
+      if (arr.current[i] < pivotValue) {
+        SortingUtility.swapRemaster(arr, i, partitionIndex, c1, c2);
         await SortingUtility.sleep(2);
         partitionIndex++;
+        draw();
       }
     }
-    SortingUtility.swap(arr, right, partitionIndex, setCurrNum1, setCurrNum2);
+    SortingUtility.swapRemaster(arr, right, partitionIndex, c1, c2);
+    draw();
     return partitionIndex;
   };
 
   static quickSort = async (
-    arr: number[],
+    arr: MutableRefObject<number[]>,
     left: number,
     right: number,
-    updateArray: Function,
-    setCurrNum1: Function,
-    setCurrNum2: Function,
-    cnt: number
+    draw: () => void,
+    cnt: number,
+    c1: MutableRefObject<number>,
+    c2: MutableRefObject<number>,
   ) => {
     if (left < right) {
       const pivot = right;
@@ -76,53 +98,53 @@ class SortingUtility {
         pivot,
         left,
         right,
-        updateArray,
-        setCurrNum1,
-        setCurrNum2
+        c1,
+        c2,
+        draw
       );
+      await SortingUtility.sleep(2);
+
       await Promise.all([
         SortingUtility.quickSort(
           arr,
           left,
           partitionIndex - 1,
-          updateArray,
-          setCurrNum1,
-          setCurrNum2,
-          cnt++
+          draw,
+          cnt++,
+          c1,
+          c2
         ),
         SortingUtility.quickSort(
           arr,
           partitionIndex + 1,
           right,
-          updateArray,
-          setCurrNum1,
-          setCurrNum2,
-          cnt++
+          draw,
+          cnt++,
+          c1,
+          c2
         ),
       ]);
     }
-    if (cnt === 0) console.log("done");
-
-    return await arr;
   };
 
   static selectionSort = async (
-    array: number[],
-    updateArray: Function,
-    setCurrNum1: Function,
-    setCurrNum2: Function
+    array: MutableRefObject<number[]>,
+    c1: MutableRefObject<number>,
+    c2: MutableRefObject<number>,
+    draw: () => void
   ) => {
-    for (let i = 0; i < array.length; i++) {
+    const len = array.current.length;
+    for (let i = 0; i < len; i++) {
       //set min to the current iteration of i
       let min = i;
-      for (let j = i + 1; j < array.length; j++) {
-        if (array[j] < array[min]) {
+      for (let j = i + 1; j < len; j++) {
+        if (array.current[j] < array.current[min]) {
           min = j;
         }
       }
-      SortingUtility.swap(array, i, min, setCurrNum1, setCurrNum2);
+      SortingUtility.swapRemaster(array, i, min, c1, c2);
       await SortingUtility.sleep(2);
-      updateArray([...array]);
+      draw();
     }
     return array;
   };
